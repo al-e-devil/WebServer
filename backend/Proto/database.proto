@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package database;
+
+message user {
+    string id = 1;
+    string username = 2;
+    string password = 3;
+    string email = 4;
+    bool banned = 5;
+}
+
+message cookie {
+    string sessionId = 1;
+    string userId = 2;
+    int64 expires = 3;
+}
+
+message settings {
+    bool mercadopago = 1;
+    bool maintenance = 2;
+}
+
+message collection {
+    map<string, user> users = 1;
+    map<string, cookie> cookies = 2;
+    settings settings = 3;
+}
