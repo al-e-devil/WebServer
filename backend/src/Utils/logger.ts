@@ -1,15 +1,12 @@
-import winston from 'winston';
+import pino from 'pino'
+export interface ILogger {
+    level: string
+    child(obj: Record<string, unknown>): ILogger
+    trace(obj: unknown, msg?: string): void
+    debug(obj: unknown, msg?: string): void
+    info(obj: unknown, msg?: string): void
+    warn(obj: unknown, msg?: string): void
+    error(obj: unknown, msg?: string): void
+}
 
-const logger = winston.createLogger({
-    level: process.env.LOG_LEVEL || 'info',
-    format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message, ...meta }) => {
-            return `${timestamp} [${level}]: ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ''}`;
-        })
-    ),
-    transports: [new winston.transports.Console()],
-});
-
-export default logger;
+export default pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` })

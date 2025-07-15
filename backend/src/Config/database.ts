@@ -31,8 +31,8 @@ export class database {
         this.logger = logger
         this.data = Proto.database.collection.create({
             users: {},
-            cookies: {},
             settings: {},
+            webserver: {},
         });
 
         this.needProfiling = needProfiling;
@@ -107,4 +107,4 @@ export class database {
     }
 }
 
-export const db = new database({ path: '../../Database/database.db', logger: P({ level: 'silent' }), needProfiling: true })
+export const db = new database({ path: '../Database/database.db', logger: P({ level: 'silent' }), needProfiling: true })
