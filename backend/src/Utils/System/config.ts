@@ -1,4 +1,3 @@
-import { db } from '../../Config/database';
 interface Status {
     reqGet: (req: any, params?: string[]) => any
     reqPost: (req: any, params?: string[]) => any
@@ -9,14 +8,14 @@ interface Status {
 }
 
 export default new class Config {
-    public collection: any[] = [];
-    public data: Record<string, any> = db.data
+    public sockets: any[] = [];
+    public routes: any[] = [];
     public status: Status = {
         reqGet: (req: any, params?: string[]) => {
             if (!params) return { status: true }
             const required = params.filter(key => !(key in req.query) || !req.query[key])
             if (required.length > 0) return {
-                creator: this.data.settings.creator,
+                creator: process.env.WEBSERVER_AUTHOR,
                 status: false,
                 msg: `parameter ${required.length > 1 ? '"' + required.slice(0, -1).join('", "') + '" and "' + required.slice(-1) + '"' : '"' + required[0] + '"'} is required`
             }
@@ -26,7 +25,7 @@ export default new class Config {
             if (!params) return { status: true }
             const required = params.filter(key => !(key in req.body) || !req.body[key])
             if (required.length > 0) return {
-                creator: this.data.settings.creator,
+                creator: process.env.WEBSERVER_AUTHOR,
                 status: false,
                 msg: `parameter ${required.length > 1 ? required.slice(0, -1).join(', ') + ' and ' + required[required.length - 1] : required[0]} is required`
             }
@@ -38,7 +37,7 @@ export default new class Config {
                 return { status: true }
             } catch {
                 return {
-                    creator: this.data.settings.creator,
+                    creator: process.env.WEBSERVER_AUTHOR,
                     status: false,
                     msg: 'argument must be of type url!'
                 }
@@ -46,20 +45,20 @@ export default new class Config {
         },
         number: (str: string) => {
             if (isNaN(Number(str))) return {
-                creator: this.data.settings.creator,
+                creator: process.env.WEBSERVER_AUTHOR,
                 status: false,
                 msg: 'argument must be of type number!'
             }
             return { status: true }
         },
         invalidURL: {
-            creator: this.data.settings.creator,
+            creator: process.env.WEBSERVER_AUTHOR,
             status: false,
             msg: 'invalid URL!'
         },
         error: (msg?: string) => {
             return {
-                creator: this.data.settings.creator,
+                creator: process.env.WEBSERVER_AUTHOR,
                 status: false,
                 msg: msg || 'Something went wrong'
             }

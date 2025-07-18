@@ -10,16 +10,24 @@ import limit from 'express-rate-limit';
 import csurf from 'csurf';
 import CFonts from 'cfonts';
 import cookieParser from 'cookie-parser'
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
-import createRouter from './Utils/handler';
-import { db } from './Config/database'
-
-const PORT = process.env.PORT || 3001;
+import Create from './Utils/handler';
+import { database } from './Config/database'
 
 const app = express();
+const server = createServer(app);
+const io = new SocketIOServer(server, {
+    cors: {
+        origin: 'http://localhost:3000',
+        credentials: true
+    }
+});
 
 const run = async () => {
-    await db.read()
+    const db = await database.init({ path: './Database/database.db', needProfiling: true });
+    await db.read();
     dotenv.config();
 
     morgan.token('clientIp', (req) => (req as any).clientIp);
@@ -29,7 +37,7 @@ const run = async () => {
         .use(cookieParser())
         .use(csurf({ cookie: true }))
         .use(express.json({ limit: '1mb' }))
-        .use('/', (await createRouter()) ?? express.Router())
+        .use('/', (await Create.routes()) ?? express.Router())
         .use(morgan(':clientIp :method :url :status :res[content-length] - :response-time ms'))
         .use(cors({
             origin: 'http://localhost:3000',
@@ -57,13 +65,14 @@ const run = async () => {
         res.setHeader('X-Powered-By', 'NXR-SERVER');
         next();
     })
-    app.listen(PORT, () => {
+    await Create.sockets(io);
+    server.listen(process.env.WEBSERVER_PORT, () => {
         CFonts.say('Web Server', { 
             font: 'tiny', 
             align: 'center', 
             colors: ['system'] 
         });
-        CFonts.say(`Database is connected\nServer listening on port ---> ${PORT}`, { 
+        CFonts.say(`Database is connected\nServer listening on port ---> ${process.env.WEBSERVER_PORT}`, { 
             font: 'console', 
             align: 'center', 
             colors: ['system'] 

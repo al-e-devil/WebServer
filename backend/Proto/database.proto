@@ -2,32 +2,83 @@ syntax = "proto3";
 
 package database;
 
-message user {
-    string id = 1;
-    string username = 2;
-    string password = 3;
-    string email = 4;
+message User {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  string real_name = 5;
+  double balance = 6;
+  string status = 7;
+  string created_at = 8;
+  string last_login = 9;
+  repeated Transaction transactions = 10;
+  repeated Bet bets = 11;
+  repeated Withdrawal withdrawals = 12;
 }
 
-message settings {
-    bool mercadopago = 1;
-    bool maintenance = 2;
-    bool logger = 3;
+message Transaction {
+  string id = 1;
+  string user_id = 2;
+  string type = 3;
+  double amount = 4;
+  string currency = 5;
+  string timestamp = 6;
+  string description = 7;
 }
 
-message webserver {
-    string url = 1;
-    string port = 2;
-    string protocol = 3;
-    string name = 4;
-    string version = 5;
-    string description = 6;
-    string author = 7;
-    string license = 8;
+message Bet {
+  string id = 1;
+  string user_id = 2;
+  string game = 3;
+  double amount = 4;
+  string result = 5;
+  double payout = 6;
+  string placed_at = 7;
 }
 
-message collection {
-    map<string, user> users = 1;
-    webserver webserver = 2;
-    settings settings = 3;
+message GameSession {
+  string id = 1;
+  string user_id = 2;
+  string game = 3;
+  string started_at = 4;
+  string ended_at = 5;
+  string status = 6;
+}
+
+message Withdrawal {
+  string id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string method = 4;
+  string status = 5;
+  string requested_at = 6;
+  string processed_at = 7;
+}
+
+message Settings {
+  bool mercadopago = 1;
+  bool maintenance = 2;
+  string logger = 3;
+}
+
+message WebServer {
+  string url = 1;
+  string port = 2;
+  string protocol = 3;
+  string name = 4;
+  string version = 5;
+  string description = 6;
+  string author = 7;
+  string license = 8;
+}
+
+message Collection {
+  repeated User users = 1;
+  repeated GameSession sessions = 2;
+  repeated Transaction all_transactions = 3;
+  repeated Bet all_bets = 4;
+  repeated Withdrawal all_withdrawals = 5;
+  WebServer webserver = 6;
+  Settings settings = 7;
 }

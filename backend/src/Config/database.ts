@@ -1,10 +1,11 @@
-import Database from 'better-sqlite3';
-import P, { Logger } from 'pino';
-import { performance } from 'perf_hooks';
-import * as Proto from '../../Proto/database';
 import fs from 'fs';
+import Database from 'better-sqlite3';
+import { performance } from 'perf_hooks';
+import logger, { ILogger } from '../Utils/logger';
 
-export const profiling = (name: string, func: () => any, logger: Logger) => {
+import * as Proto from '../../Proto/database';
+
+export const profiling = (name: string, func: () => any) => {
     const start = performance.now()
     func()
     const end = performance.now()
@@ -12,9 +13,9 @@ export const profiling = (name: string, func: () => any, logger: Logger) => {
 };
 
 export class database {
-    public logger: Logger
+    public logger: ILogger
     public path: string
-    public data: Proto.database.Icollection
+    public data: Proto.database.ICollection
     public needProfiling: boolean
     private db: Database.Database
 
@@ -26,23 +27,37 @@ export class database {
      * @param {Logger} [options.logger] - The logger to use.
      * @param {boolean} [options.needProfiling] - Whether to profile the read operation.
      */
-    constructor({ path, logger, needProfiling }: { path: string, logger: Logger, needProfiling: boolean }) {
-        this.path = path
-        this.logger = logger
-        this.data = Proto.database.collection.create({
-            users: {},
-            settings: {},
-            webserver: {},
+    private constructor({ path, needProfiling }: { path: string, needProfiling: boolean }) {
+        this.path = path;
+        this.logger = logger;
+        this.data = Proto.database.Collection.create({
+            users: [],
+            sessions: [],
+            allTransactions: [],
+            allBets: [],
+            allWithdrawals: [],
+            webserver: {
+                url: process.env.WEBSERVER_URL,
+                port: process.env.WEBSERVER_PORT,
+                protocol: process.env.WEBSERVER_PROTOCOL,
+                name: process.env.WEBSERVER_NAME,
+                version: process.env.WEBSERVER_VERSION,
+                description: process.env.WEBSERVER_DESCRIPTION,
+                author: process.env.WEBSERVER_AUTHOR,
+                license: process.env.WEBSERVER_LICENSE,
+            },
+            settings: {
+                mercadopago: process.env.MERCADOPAGO as unknown as boolean,
+                maintenance: process.env.MAINTENANCE as unknown as boolean,
+                logger: process.env.LOGGER,
+            },
         });
-
         this.needProfiling = needProfiling;
-
-        const dir = require('path').dirname(path)
+        const dir = require('path').dirname(path);
         if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true })
+            fs.mkdirSync(dir, { recursive: true });
         }
-
-        this.db = new Database(path)
+        this.db = new Database(path);
         this.db.exec(`
             PRAGMA journal_mode = WAL;
             PRAGMA synchronous = NORMAL;
@@ -54,14 +69,17 @@ export class database {
                 data BLOB
             );
         `);
+    }
 
-        if (this.needProfiling) {
-            profiling('read', this.read.bind(this), this.logger);
+    public static async init({ path, needProfiling }: { path: string, needProfiling: boolean }) {
+        const instance = new database({ path, needProfiling });
+        if (instance.needProfiling) {
+            profiling('read', () => { instance.read(); });
         } else {
-            this.read.bind(this)();
+            await instance.read();
         }
-
         logger.info(`Database in archive ${path} initialized`);
+        return instance;
     }
 
     /**
@@ -75,7 +93,7 @@ export class database {
             const row: any = this.db.prepare('SELECT data FROM storage WHERE id = ?').get(1);
             if (row) {
                 const buffer = row.data as Buffer;
-                this.data = Proto.database.collection.decode(buffer);
+                this.data = Proto.database.Collection.decode(buffer);
                 this.logger.info(`Database in archive ${this.path} read from cache (Size: ${buffer.length} bytes)`);
             }
         } catch (error) {
@@ -91,14 +109,14 @@ export class database {
     public async write() {
         try {
             const writeOperation = () => {
-                const writer = Proto.database.collection.encode(this.data);
+                const writer = Proto.database.Collection.encode(this.data);
                 const buffer = writer.finish();
                 this.db.transaction(() => {
                     this.db.prepare('INSERT OR REPLACE INTO storage (id, data) VALUES (?, ?)').run(1, Buffer.from(buffer));
                 })();
             }
 
-            if (this.needProfiling) profiling('write', writeOperation, this.logger);
+            if (this.needProfiling) profiling('write', writeOperation);
             else await writeOperation();
             this.logger.info(`Database in archive ${this.path} written`);
         } catch (error) {
@@ -106,5 +124,3 @@ export class database {
         }
     }
 }
-
-export const db = new database({ path: '../Database/database.db', logger: P({ level: 'silent' }), needProfiling: true })

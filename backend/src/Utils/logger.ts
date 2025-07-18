@@ -1,4 +1,5 @@
-import pino from 'pino'
+import pino from 'pino';
+
 export interface ILogger {
     level: string
     child(obj: Record<string, unknown>): ILogger
@@ -9,4 +10,7 @@ export interface ILogger {
     error(obj: unknown, msg?: string): void
 }
 
-export default pino({ timestamp: () => `,"time":"${new Date().toJSON()}"` })
+export default pino({
+    level: 'silent',
+    timestamp: () => `,"time":"${new Date().toJSON()}"`
+});
