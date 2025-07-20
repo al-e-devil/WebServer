@@ -11,7 +11,6 @@ export default {
     description: 'Socket authentication management',
     events: ['login', 'register'],
     file: 'auth.ts',
-
     execution(io: Server) {
         io.on('connection', (socket: Socket) => {
             socket.on('login', async (encrypted: string) => {

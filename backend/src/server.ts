@@ -26,8 +26,6 @@ const io = new SocketIOServer(server, {
 });
 
 const run = async () => {
-    const db = await database.init({ path: './Database/database.db', needProfiling: true });
-    await db.read();
     dotenv.config();
 
     morgan.token('clientIp', (req) => (req as any).clientIp);
