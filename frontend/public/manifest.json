@@ -1,14 +1,28 @@
 {
-  "name": "JetPlay - Casino Online",
-  "short_name": "JetPlay",
-  "description": "JetPlay, el casino en línea creado por Auralix. Disfruta de tragamonedas, ruleta, blackjack y más desde cualquier dispositivo.",
+  "name": "Auralix",
+  "short_name": "Auralix",
+  "description": "Innovación en desarrollo de software y soluciones tecnológicas",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "theme_color": "#000222",
-  "background_color": "#000000",
+  "orientation": "any",
+  "theme_color": "#0A1929",
+  "background_color": "#ffffff",
   "lang": "es-PE",
+  "shortcuts": [
+    {
+      "name": "Servicios",
+      "short_name": "Servicios",
+      "url": "/services",
+      "icons": [{ "src": "/icons/services.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contacto",
+      "short_name": "Contacto",
+      "url": "/contact",
+      "icons": [{ "src": "/icons/contact.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
