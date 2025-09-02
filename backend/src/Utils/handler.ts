@@ -71,7 +71,7 @@ export default new class Handler {
     public async sockets(io: Server): Promise<void> {
         try {
             await Loader.socket(path.join(__dirname, '../Socket'));
-            const sockets = Object.values(Loader.socket);
+            const sockets = Object.values(Loader.sockets);
 
             sockets.forEach((socket: any) => {
                 if (socket.name) {
@@ -86,7 +86,7 @@ export default new class Handler {
                 if (typeof socket.execution === 'function') {
                     socket.execution(io);
                 }
-            });
+            })
         } catch (err) {
             if (err instanceof Error) {
                 throw new Error(`Failed to load sockets: ${err.message}`);

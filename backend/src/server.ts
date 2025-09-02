@@ -14,16 +14,15 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 
 import Create from './Utils/handler';
-import { database } from './Config/database'
 
 const app = express();
-const server = createServer(app);
+const server = createServer(app)
 const io = new SocketIOServer(server, {
     cors: {
-        origin: 'http://localhost:3000',
-        credentials: true
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"]
     }
-});
+})
 
 const run = async () => {
     dotenv.config();
@@ -38,7 +37,7 @@ const run = async () => {
         .use('/', (await Create.routes()) ?? express.Router())
         .use(morgan(':clientIp :method :url :status :res[content-length] - :response-time ms'))
         .use(cors({
-            origin: 'http://localhost:3000',
+            origin: 'http://localhost:5173',
             credentials: true
         }))
         .use(limit({
@@ -63,17 +62,17 @@ const run = async () => {
         res.setHeader('X-Powered-By', 'NXR-SERVER');
         next();
     })
-    await Create.sockets(io);
+    await Create.sockets(io)
     server.listen(process.env.WEBSERVER_PORT, () => {
-        CFonts.say('Web Server', { 
-            font: 'tiny', 
-            align: 'center', 
-            colors: ['system'] 
+        CFonts.say('Web Server', {
+            font: 'tiny',
+            align: 'center',
+            colors: ['system']
         });
-        CFonts.say(`Database is connected\nServer listening on port ---> ${process.env.WEBSERVER_PORT}`, { 
-            font: 'console', 
-            align: 'center', 
-            colors: ['system'] 
+        CFonts.say(`Database is connected\nServer listening on port ---> ${process.env.WEBSERVER_PORT}`, {
+            font: 'console',
+            align: 'center',
+            colors: ['system']
         });
     });
 }
